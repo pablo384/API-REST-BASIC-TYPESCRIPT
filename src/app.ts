@@ -14,7 +14,6 @@ class App {
         this.initializeMiddlewares();
         this.initializeControllers(controllers);
     }
-    private
 
     private initializeMiddlewares() {
         this.app.use(bodyParser.json());
