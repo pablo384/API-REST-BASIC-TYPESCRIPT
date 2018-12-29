@@ -1,6 +1,7 @@
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import * as mongoose from 'mongoose';
+import errorMiddleware from './middleware/error.middleware';
 
 class App {
     public app: express.Application;
@@ -13,6 +14,7 @@ class App {
         this.connectToTheDatabase();
         this.initializeMiddlewares();
         this.initializeControllers(controllers);
+        this.initializeErrorHandling();
     }
 
     private initializeMiddlewares() {
@@ -24,6 +26,9 @@ class App {
             this.app.use('/api', controller.router);
         });
     }
+    private initializeErrorHandling() {
+        this.app.use(errorMiddleware);
+    }
 
     public listen() {
         this.app.listen(this.port, () => {
@@ -31,7 +36,7 @@ class App {
         });
     }
     private connectToTheDatabase() {
-        mongoose.connect(`mongodb://localhost/typescript-rest`, { useNewUrlParser: true });
+        mongoose.connect('mongodb://localhost/typescript-rest', { useNewUrlParser: true });
     }
 }
 

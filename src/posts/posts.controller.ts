@@ -2,6 +2,8 @@ import * as express from 'express';
 import Post from './posts.interface';
 import Controller from '../interfaces/controller.interface';
 import postModel from './posts.model';
+import PostNotFoundException from '../exceptions/PostNotFoundException';
+import ParameterInvalid from '../exceptions/ParameterInvalid';
 
 class PostsController implements Controller {
     public path = '/posts';
@@ -35,20 +37,35 @@ class PostsController implements Controller {
             });
     }
 
-    private getPostById = (request: express.Request, response: express.Response) => {
+    private getPostById = (request: express.Request, response: express.Response, next: express.NextFunction) => {
         const id = request.params.id;
+        console.log('id: ', id);
         this.post.findById(id)
             .then((post) => {
-                response.send(post);
+                if (post) {
+                    response.send(post);
+                } else {
+                    next(new PostNotFoundException(id));
+                }
+            })
+            .catch((err) => {
+                next(new ParameterInvalid(id));
             });
     }
 
-    private modifyPost = (request: express.Request, response: express.Response) => {
+    private modifyPost = (request: express.Request, response: express.Response, next: express.NextFunction) => {
         const id = request.params.id;
         const postData: Post = request.body;
         this.post.findByIdAndUpdate(id, postData, { new: true })
             .then((post) => {
-                response.send(post);
+                if (post) {
+                    response.send(post);
+                } else {
+                    next(new PostNotFoundException(id));
+                }
+            })
+            .catch((err) => {
+                next(new ParameterInvalid(id));
             });
     }
 
@@ -61,15 +78,18 @@ class PostsController implements Controller {
             });
     }
 
-    private deletePost = (request: express.Request, response: express.Response) => {
+    private deletePost = (request: express.Request, response: express.Response, next: express.NextFunction) => {
         const id = request.params.id;
         this.post.findByIdAndDelete(id)
             .then((successResponse) => {
                 if (successResponse) {
                     response.send(200);
                 } else {
-                    response.send(404);
+                    next(new PostNotFoundException(id));
                 }
+            })
+            .catch((err) => {
+                next(new ParameterInvalid(id));
             });
     }
 }
